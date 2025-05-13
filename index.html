@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Gift Parser PRO</title>
+    <style>
+        :root {
+            --primary: #0088cc;
+            --primary-dark: #006699;
+            --background: #f5f5f5;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #777777;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .control-panel {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 136, 204, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .gift-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .gift-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .gift-image-container {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+
+        .gift-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .gift-card:hover .gift-image {
+            transform: scale(1.05);
+        }
+
+        .gift-content {
+            padding: 20px;
+        }
+
+        .gift-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .gift-model {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .gift-owner {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .gift-owner:hover {
+            text-decoration: underline;
+        }
+
+        .owner-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .gift-properties {
+            margin-top: 15px;
+        }
+
+        .property {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .property-name {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .property-value {
+            color: var(--text);
+            text-align: right;
+        }
+
+        .percentage {
+            color: var(--success);
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .gift-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+
+        .view-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .copy-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .copy-btn:hover {
+            background-color: #f0f8ff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #cccccc;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .gift-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Telegram Gift Parser</h1>
+            <p class="subtitle">Created by <a href="https://t.me/kryyaa">@kryyaa</a></p>
+        </header>
+
+        <div class="control-panel">
+            <div class="form-group">
+                <label for="giftModel">Gift Model</label>
+                <select id="giftModel">
+                    <option value="">Select a model</option>
+                    <!-- Options will be filled by JavaScript -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="giftNumber">Gift Number (1-100000)</label>
+                <input type="number" id="giftNumber" min="1" max="100000" placeholder="e.g. 382">
+            </div>
+            
+            <button id="parseBtn" class="btn" onclick="parseGift()">
+                <span>Parse Gift</span>
+            </button>
+            
+            <button id="randomBtn" class="btn btn-secondary" onclick="parseRandomGift()">
+                <span>Random Gift</span>
+            </button>
+            
+            <button id="batchBtn" class="btn btn-secondary" onclick="parseBatchGifts()">
+                <span>Parse 100 Random</span>
+            </button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalParsed">0</div>
+                <div class="stat-label">Total Parsed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="validGifts">0</div>
+                <div class="stat-label">Valid Gifts</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="invalidGifts">0</div>
+                <div class="stat-label">Invalid Gifts</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Parsing gifts, please wait...</p>
+            <button class="btn btn-secondary" onclick="stopParsing()">Stop Parsing</button>
+        </div>
+
+        <div id="giftList" class="gift-list">
+            <div class="empty-state">
+                <div class="empty-icon">🎁</div>
+                <h3>No gifts parsed yet</h3>
+                <p>Select a gift model and click "Parse Gift" to start</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gift models without numbers and special characters
+        const giftModels = [
+            "WitchHat", "WinterWreath", "VoodooDoll", "VintageCigar", "TrappedHeart", 
+            "ToyBear", "TopHat", "TamaGadget", "SwissWatch", "StarNotepad", 
+            "SpyAgaric", "SpicedWine", "SnowMittens", "SnowGlobe", "SleighBell", 
+            "SkullFlower", "SignetRing", "SharpTongue", "ScaredCat", "SantaHat", 
+            "SakuraFlower", "RecordPlayer", "PreciousPeach", "PlushPepe", "PerfumeBottle", 
+            "PartySparkler", "NekoHelmet", "MiniOscar", "MagicPotion", "MadPumpkin", 
+            "LunarSnake", "LovePotion", "LoveCandle", "LootBag", "LolPop", 
+            "KissedFrog", "JingleBells", "JesterHat", "JellyBunny", "IonGem", 
+            "HypnoLollipop", "HomemadeCake", "HexPot", "HangingStar", "GingerCookie", 
+            "GenieLamp", "FlyingBroom", "EvilEye", "EternalRose", "ElectricSkull", 
+            "DurovsCap", "DiamondRing", "DeskCalendar", "CrystalBall", "CookieHeart", 
+            "CandyCane", "BunnyMuffin", "BerryBox", "BDayCandle", "AstralShard", 
+            "JackintheBox"
+        ];
+
+        // Fill the select dropdown with gift models
+        const giftModelSelect = document.getElementById('giftModel');
+        giftModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            giftModelSelect.appendChild(option);
+        });
+
+        // Global variables
+        let totalParsed = 0;
+        let validGifts = 0;
+        let invalidGifts = 0;
+        let isParsing = false;
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('totalParsed').textContent = totalParsed;
+            document.getElementById('validGifts').textContent = validGifts;
+            document.getElementById('invalidGifts').textContent = invalidGifts;
+            
+            const successRate = totalParsed > 0 ? Math.round(validGifts / totalParsed * 100) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
+        }
+
+        // Parse a single gift
+        async function parseGift() {
+            const giftModel = document.getElementById('giftModel').value;
+            const giftNumber = document.getElementById('giftNumber').value;
+            
+            if (!giftModel) {
+                alert('Please select a gift model first');
+                return;
+            }
+            
+            if (!giftNumber) {
+                alert('Please enter a gift number');
+                return;
+            }
+            
+            await parseSingleGift(giftModel, giftNumber);
+        }
+
+        // Parse random gift
+        async function parseRandomGift() {
+            const giftModel = document.getElementById('giftModel').value;
+            if (!giftModel) {
+                alert('Please select a gift model first');
+                return;
+            }
+            
+            const randomNum = Math.floor(Math.random() * 100000) + 1;
+            document.getElementById('giftNumber').value = randomNum;
+            await parseSingleGift(giftModel, randomNum);
+        }
+
+        // Parse batch of 100 random gifts
+        async function parseBatchGifts() {
+            const giftModel = document.getElementById('giftModel').value;
+            if (!giftModel) {
+                alert('Please select a gift model first');
+                return;
+            }
+            
+            if (isParsing) return;
+            isParsing = true;
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('parseBtn').disabled = true;
+            document.getElementById('randomBtn').disabled = true;
+            document.getElementById('batchBtn').disabled = true;
+            
+            // Remove empty state if it exists
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            const giftNumbers = new Set();
+            while (giftNumbers.size < 100) {
+                giftNumbers.add(Math.floor(Math.random() * 100000) + 1);
+            }
+            
+            // Process gifts in batches to avoid browser freezing
+            const batchSize = 5;
+            const giftNumbersArray = Array.from(giftNumbers);
+            
+            for (let i = 0; i < giftNumbersArray.length; i += batchSize) {
+                if (!isParsing) break;
+                
+                const batch = giftNumbersArray.slice(i, i + batchSize);
+                await Promise.all(batch.map(num => parseSingleGift(giftModel, num, false)));
+                
+                // Small delay between batches
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('parseBtn').disabled = false;
+            document.getElementById('randomBtn').disabled = false;
+            document.getElementById('batchBtn').disabled = false;
+            isParsing = false;
+        }
+
+        // Stop parsing
+        function stopParsing() {
+            isParsing = false;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('parseBtn').disabled = false;
+            document.getElementById('randomBtn').disabled = false;
+            document.getElementById('batchBtn').disabled = false;
+        }
+
+        // Parse single gift (core function)
+        async function parseSingleGift(giftModel, giftNumber, updateInput = true) {
+            if (updateInput) {
+                document.getElementById('giftNumber').value = giftNumber;
+            }
+            
+            const url = `https://t.me/nft/${giftModel}-${giftNumber}`;
+            
+            try {
+                // Use CORS proxy
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                totalParsed++;
+                
+                if (data.contents) {
+                    const parser = new DOMParser();
+                    const htmlDoc = parser.parseFromString(data.contents, 'text/html');
+                    
+                    // Check if gift is valid (has owner)
+                    const ownerTag = htmlDoc.querySelector('a[href^="https://t.me/"]');
+                    const isValid = ownerTag !== null;
+                    
+                    if (isValid) {
+                        validGifts++;
+                        displayGiftCard(htmlDoc, url, giftNumber, giftModel);
+                    } else {
+                        invalidGifts++;
+                    }
+                    
+                    updateStats();
+                } else {
+                    invalidGifts++;
+                    updateStats();
+                }
+            } catch (error) {
+                console.error(`Error parsing gift #${giftNumber}:`, error);
+                totalParsed++;
+                invalidGifts++;
+                updateStats();
+            }
+        }
+
+        // Display gift card
+        function displayGiftCard(doc, giftUrl, giftNumber, giftModel) {
+            // Extract data
+            const title = doc.querySelector('meta[property="og:title"]')?.content || `${giftModel} #${giftNumber}`;
+            const imageUrl = doc.querySelector('meta[property="og:image"]')?.content || '';
+            const description = doc.querySelector('meta[property="og:description"]')?.content || '';
+            
+            // Owner info
+            const ownerTag = doc.querySelector('a[href^="https://t.me/"]');
+            const owner = {
+                username: ownerTag?.querySelector('span')?.textContent || 'Unknown',
+                url: ownerTag?.href || '#'
+            };
+            
+            // Characteristics
+            const characteristics = [];
+            const table = doc.querySelector('table.tgme_gift_table');
+            if (table) {
+                table.querySelectorAll('tr').forEach(row => {
+                    const cols = row.querySelectorAll('th, td');
+                    if (cols.length === 2) {
+                        const key = cols[0].textContent.trim();
+                        const value = cols[1].textContent.trim();
+                        const percentageMatch = value.match(/(\d+\.?\d*)%/);
+                        
+                        if (percentageMatch) {
+                            const percentage = percentageMatch[0];
+                            const valueWithoutPercentage = value.replace(percentage, '').trim();
+                            characteristics.push({
+                                name: key,
+                                value: valueWithoutPercentage,
+                                percentage: percentage
+                            });
+                        } else {
+                            characteristics.push({
+                                name: key,
+                                value: value
+                            });
+                        }
+                    }
+                });
+            }
+            
+            // Create gift card
+            const giftCard = document.createElement('div');
+            giftCard.className = 'gift-card';
+            
+            let cardHtml = `
+                <div class="gift-image-container">
+                    ${imageUrl ? `<img src="${imageUrl}" class="gift-image" alt="${title}" loading="lazy">` : 
+                    '<div style="display: flex; height: 100%; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #666; font-size: 1.2rem;">No Image</div>'}
+                </div>
+                <div class="gift-content">
+                    <div class="gift-model">${giftModel}</div>
+                    <h3 class="gift-title">${title}</h3>
+                    
+                    <a href="${owner.url}" class="gift-owner" target="_blank">
+                        <div class="owner-avatar">${owner.username.charAt(0).toUpperCase()}</div>
+                        ${owner.username}
+                    </a>
+                    
+                    <div class="gift-properties">
+            `;
+            
+            characteristics.forEach(prop => {
+                cardHtml += `
+                    <div class="property">
+                        <span class="property-name">${prop.name}</span>
+                        <span class="property-value">
+                            ${prop.value}
+                            ${prop.percentage ? `<span class="percentage">${prop.percentage}</span>` : ''}
+                        </span>
+                    </div>
+                `;
+            });
+            
+            cardHtml += `
+                    </div>
+                    
+                    <div class="gift-actions">
+                        <a href="${giftUrl}" class="action-btn view-btn" target="_blank">View</a>
+                        <button class="action-btn copy-btn" onclick="navigator.clipboard.writeText('${giftUrl}')">Copy Link</button>
+                    </div>
+                </div>
+            `;
+            
+            giftCard.innerHTML = cardHtml;
+            
+            // Add to the top of the list
+            const giftList = document.getElementById('giftList');
+            if (giftList.children.length === 0 || giftList.children[0].classList.contains('empty-state')) {
+                giftList.innerHTML = '';
+            }
+            giftList.insertBefore(giftCard, giftList.firstChild);
+        }
+    </script>
+</body>
+</html>
